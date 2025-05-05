@@ -7,12 +7,26 @@ def convert_instruction_to_opcode(instruction):
         return 0x00
     elif instruction == "BEWAAR_STATUS":
         return 0x01
-
+    elif instruction == "BEGIN_EINDE_PROGRAMMA_INDEX":
+        return 0x03
+    elif instruction == "ZET_PORT_AAN":
+        return 0x04
+    elif instruction == "ZET_PORT_UIT":
+        return 0x05
+    elif instruction == "SPRING":
+        return 0x06
+    elif instruction == "WACHTEN":
+        return 0x07
+    elif instruction == "FLIP_POORT":
+        return 0x08
+    
     return -1  # Return -1 if the instruction is not recognized
 
 class GPCLexer(Lexer):
     tokens = { INSTRUCTION, NUMBER, STRING, SEPARATOR, EQUALS, LPAREN, RPAREN, SEMICOLON }
     ignore = ' \t'
+    # Other ignored patterns
+    ignore_comment = r'\#.*'
     ignore_newline = r'\n+'
 
     # Define the tokens
@@ -46,33 +60,41 @@ class GPCParser(Parser):
     def _init_(self): 
         self.env = { } 
 
-    @_('INSTRUCTION ARGUMENTS SEMICOLON')  ## Simple statement ()
+    @_('statement program')
+    def program(self, p):
+        return { 'statement': p.statement, 'program': p.program }
+
+    @_('empty')
+    def program(self, p):
+        pass
+
+    @_('INSTRUCTION arguments SEMICOLON')  ## Simple statement ()
     def statement(self, p):
         # Convert the instruction to opcode and return it
         code = convert_instruction_to_opcode(p.INSTRUCTION)
         if code == -1:
             raise ValueError(f"Unknown instruction: {p.INSTRUCTION}")
-        return { 'instruction': code }
+        return { 'instruction': code, 'arguments': p.arguments }
 
-    @_('INSTRUCTION SEMICOLON')  ## Simple statement (no arguments)
-    def statement(self, p):
-        # Convert the instruction to opcode and return it
-        code = convert_instruction_to_opcode(p.INSTRUCTION)
-        if code == -1:
-            raise ValueError(f"Unknown instruction: {p.INSTRUCTION}")
-        return { 'instruction': code }
+    @_('empty')
+    def arguments(self, p):
+        pass
 
-    @_('LPAREN ARGUMENT RPAREN')
-    def ARGUMENTS(self, p):
-        return { 'arguments': p.ARGUMENT }
+    @_('LPAREN argument RPAREN')
+    def arguments(self, p):
+        return { 'arguments': p.argument }
 
-    @_('LPAREN ARGUMENT SEPARATOR ARGUMENT RPAREN')
-    def ARGUMENTS(self, p):
-        return { 'arguments': { p.ARGUMENT[0], p.ARGUMENT[1] }}
+    @_('LPAREN argument SEPARATOR argument RPAREN')
+    def arguments(self, p):
+        return { 'arguments': [p.argument0, p.argument1] }
 
-    @_('STRING EQUALS NUMBER')
-    def ARGUMENT(self, p):
-        return { 'string': p.STRING, 'number': p.NUMBER }
+    @_('INSTRUCTION EQUALS NUMBER')
+    def argument(self, p):
+        return { 'string': p.INSTRUCTION, 'number': p.NUMBER }
+
+    @_('')
+    def empty(self, p):
+        pass
 
 # Set main guard
 if __name__ == "__main__":
@@ -121,9 +143,20 @@ if __name__ == "__main__":
 
     gpc_lexer = GPCLexer()
     gpc_parser = GPCParser()
+    # combine the lines into a single string for parsing
+    combined_data = "".join(data)
+    if args.verbose:
+        print("Tokens:")
+        # Print the tokens if verbose is enabled
+        for token in gpc_lexer.tokenize(combined_data):
+            print(token)
 
+    print("----------------------------------------------------")
+    print(gpc_parser.parse(gpc_lexer.tokenize(combined_data)))  # Parse the data
+    print("----------------------------------------------------")
+    
     for line in data:
         # print the step if verbose is enabled
         if args.verbose:
             print(f"Processing line: {line}")
-        gpc_parser.parse(gpc_lexer.tokenize(line))  # Parse the data
+        print(gpc_parser.parse(gpc_lexer.tokenize(line)))  # Parse the data
