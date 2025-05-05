@@ -1,100 +1,48 @@
+from lark import Lark, Transformer
 
-from sly import Lexer
-from sly import Parser
+# Define the instruction mapping
+INSTRUCTION_MAP = {
+    "BEGIN_EINDE_PROGRAMMA_INDEX": 1,
+    "WACHTEN": 2,
+    "ZET_PORT_AAN": 3,
+    "ZET_PORT_UIT": 4,
+    "FLIP_POORT": 5,
+    "BEWAAR_STATUS": 6,
+    "SPRING": 7,
+    "STOPPEN": 8
+}
 
-def convert_instruction_to_opcode(instruction):
-    if instruction == "STOPPEN":
-        return 0x00
-    elif instruction == "BEWAAR_STATUS":
-        return 0x01
-    elif instruction == "BEGIN_EINDE_PROGRAMMA_INDEX":
-        return 0x03
-    elif instruction == "ZET_PORT_AAN":
-        return 0x04
-    elif instruction == "ZET_PORT_UIT":
-        return 0x05
-    elif instruction == "SPRING":
-        return 0x06
-    elif instruction == "WACHTEN":
-        return 0x07
-    elif instruction == "FLIP_POORT":
-        return 0x08
-    
-    return -1  # Return -1 if the instruction is not recognized
+# Define the grammar
+grammar = """
+    start: instruction+
+    instruction: IDENT "(" param_list ")" ";" | IDENT ";"
+    param_list: param ("," param)*
+    param: IDENT "=" HEX | IDENT "=" NUMBER
 
-class GPCLexer(Lexer):
-    tokens = { INSTRUCTION, NUMBER, STRING, SEPARATOR, EQUALS, LPAREN, RPAREN, SEMICOLON }
-    ignore = ' \t'
-    # Other ignored patterns
-    ignore_comment = r'\#.*'
-    ignore_newline = r'\n+'
+    IDENT: /[A-Za-z_]+/
+    HEX: /0x[0-9A-Fa-f]+/
+    NUMBER: /[0-9]+/
 
-    # Define the tokens
-    INSTRUCTION = r'[a-zA-Z_][a-zA-Z0-9_]*'
-    STRING      = r'"([^"\\]|\\.)*"'
+    %import common.WS
+    %ignore WS
+"""
 
-    # Define the operators
-    EQUALS  = r'='
-    SEPARATOR  = r','
-    LPAREN  = r'\('
-    RPAREN  = r'\)'
-    SEMICOLON = r';'
-
-    # Number token 
-    @_(r'0x[0-9a-fA-F]+',r'\d+')
-    def NUMBER(self, t):
-        if t.value.startswith('0x'):
-            t.value = int(t.value[2:], 16)
-        else:
-            t.value = int(t.value)
-        return t
-
-    # Comment token 
-    @_(r'//.*') 
-    def COMMENT(self, t): 
-        pass
-
-class GPCParser(Parser):
-    tokens = GPCLexer.tokens
-
-    def _init_(self): 
-        self.env = { } 
-
-    @_('statement program')
-    def program(self, p):
-        return { 'statement': p.statement, 'program': p.program }
-
-    @_('empty')
-    def program(self, p):
-        pass
-
-    @_('INSTRUCTION arguments SEMICOLON')  ## Simple statement ()
-    def statement(self, p):
-        # Convert the instruction to opcode and return it
-        code = convert_instruction_to_opcode(p.INSTRUCTION)
-        if code == -1:
-            raise ValueError(f"Unknown instruction: {p.INSTRUCTION}")
-        return { 'instruction': code, 'arguments': p.arguments }
-
-    @_('empty')
-    def arguments(self, p):
-        pass
-
-    @_('LPAREN argument RPAREN')
-    def arguments(self, p):
-        return { 'arguments': p.argument }
-
-    @_('LPAREN argument SEPARATOR argument RPAREN')
-    def arguments(self, p):
-        return { 'arguments': [p.argument0, p.argument1] }
-
-    @_('INSTRUCTION EQUALS NUMBER')
-    def argument(self, p):
-        return { 'string': p.INSTRUCTION, 'number': p.NUMBER }
-
-    @_('')
-    def empty(self, p):
-        pass
+# Define the transformer
+class InstructionTransformer(Transformer):
+    def instruction(self, args):
+        name = args[0].value  # Extract instruction name
+        instr_num = INSTRUCTION_MAP.get(name, 99)  # Default unknown instruction to 99
+        params = []
+        
+        if len(args) > 1:  # Ensure parameters exist
+            for param in args[1:]:
+                if len(param.children) >= 1:  # Check if parameter has both key and value
+                    for param in param.children[0:]:
+                        param_name = param.children[0].value  # Correctly extract value
+                        param_value = param.children[1].value  # Correctly extract value
+                        params.append((param_name, param_value))  # Append the value to params
+        
+        return [instr_num] + params  # Combine instruction number and parameters
 
 # Set main guard
 if __name__ == "__main__":
@@ -137,26 +85,11 @@ if __name__ == "__main__":
 
     # open the input file and read the contents
     with open(args.input, "r") as f:
-        data = f.readlines()
+        sourcecode = f.read()
 
-    data = [line.strip() for line in data if line.strip()]  # Remove empty lines and strip whitespace
+    # Create the parser
+    parser = Lark(grammar, start="start", parser="lalr")
+    tree = parser.parse(sourcecode)
+    parsed_data = [InstructionTransformer().transform(instr) for instr in tree.children]
+    print(parsed_data)
 
-    gpc_lexer = GPCLexer()
-    gpc_parser = GPCParser()
-    # combine the lines into a single string for parsing
-    combined_data = "".join(data)
-    if args.verbose:
-        print("Tokens:")
-        # Print the tokens if verbose is enabled
-        for token in gpc_lexer.tokenize(combined_data):
-            print(token)
-
-    print("----------------------------------------------------")
-    print(gpc_parser.parse(gpc_lexer.tokenize(combined_data)))  # Parse the data
-    print("----------------------------------------------------")
-    
-    for line in data:
-        # print the step if verbose is enabled
-        if args.verbose:
-            print(f"Processing line: {line}")
-        print(gpc_parser.parse(gpc_lexer.tokenize(line)))  # Parse the data
