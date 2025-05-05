@@ -1,0 +1,11 @@
+    start: instruction+
+    instruction: IDENT "(" param_list ")" ";" | IDENT ";"
+    param_list: param ("," param)*
+    param: IDENT "=" HEX | IDENT "=" NUMBER
+
+    IDENT: /[A-Za-z_]+/
+    HEX: /0x[0-9A-Fa-f]+/
+    NUMBER: /[0-9]+/
+
+    %import common.WS
+    %ignore WS

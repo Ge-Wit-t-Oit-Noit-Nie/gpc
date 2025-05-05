@@ -12,21 +12,6 @@ INSTRUCTION_MAP = {
     "STOPPEN": 8
 }
 
-# Define the grammar
-grammar = """
-    start: instruction+
-    instruction: IDENT "(" param_list ")" ";" | IDENT ";"
-    param_list: param ("," param)*
-    param: IDENT "=" HEX | IDENT "=" NUMBER
-
-    IDENT: /[A-Za-z_]+/
-    HEX: /0x[0-9A-Fa-f]+/
-    NUMBER: /[0-9]+/
-
-    %import common.WS
-    %ignore WS
-"""
-
 # Define the transformer
 class InstructionTransformer(Transformer):
     def instruction(self, args):
@@ -88,8 +73,9 @@ if __name__ == "__main__":
         sourcecode = f.read()
 
     # Create the parser
-    parser = Lark(grammar, start="start", parser="lalr")
+    parser = Lark.open("gpc.lark", rel_to=__file__, parser="lalr" ) #Lark(grammar, start="start", parser="lalr")
     tree = parser.parse(sourcecode)
+    print(tree.pretty())  # Print the parse tree for debugging
     parsed_data = [InstructionTransformer().transform(instr) for instr in tree.children]
     print(parsed_data)
 
