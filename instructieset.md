@@ -10,6 +10,7 @@ De volgende instructies zijn beschikbaar:
   - [ZET\_PORT\_UIT](#zet_port_uit)
   - [FLIP\_POORT](#flip_poort)
   - [BEWAAR\_STATUS](#bewaar_status)
+  - [SPRING](#spring)
 
 ## STOPPEN
 
@@ -88,3 +89,12 @@ De functie BEWAAR_STATUS wordt als volgt gecodeerd:
 | Element | Bitmask               | Hex    | Parameter         |
 | ------- | --------------------- | ------ | ----------------- |
 | OPCODE  | 0b0110 0000 0000 0000 | 0x6000 |                   |
+
+## SPRING
+
+De functie BEWAAR_STATUS wordt als volgt gecodeerd:
+
+| Element | Bitmask               | Hex    | Parameter         |
+| ------- | --------------------- | ------ | ----------------- |
+| OPCODE  | 0b0110 0000 0000 0000 |        |                   |
+| INDEX   | 0b0000 1111 1111 1111 | x0FFF  | Spring direct naar index                  |

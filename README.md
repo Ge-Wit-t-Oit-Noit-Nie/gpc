@@ -11,14 +11,15 @@ Een programma bestaat uit een [instructie](./instructieset.md) per regel.
 Als voorbeeld:
 
 ```txt
-BEGIN_EINDE_PROGRAMMA_INDEX (0x0007)
-WACHTEN (0x05DC)
-ZET_PORT_AAN (PORTNR=0x01, HSIO=0x00)
-ZET_PORT_UIT (PORTNR=1, HSIO=0)
-FLIP_POORT (PORTNR=0x01, HSIO=0x01)
-BEWAAR_STATUS
-SPRING (0x0002)
-STOPPEN
+BEGIN_EINDE_PROGRAMMA_INDEX (index=0x0007);
+ZET_PORT_AAN (PORTNR=0x00, HSIO=0x00);
+ZET_PORT_UIT (PORTNR=0x01, HSIO=0x00);
+WACHTEN (delay=0x05DC);
+FLIP_POORT (PORTNR=0x01, HSIO=1);
+BEWAAR_STATUS;
+SPRING (index=0x0003);
+BEWAAR_STATUS;
+STOPPEN;
 ```
 
 In dit programma, worden de volgende stappen uitgevoerd:
@@ -32,7 +33,27 @@ In dit programma, worden de volgende stappen uitgevoerd:
 7. spring terug naar de 2de instructie
 8. stop het programma
 
-## Python
+## Compileren
+
+Start een [python](#python-starten) sessie en type het volgende
+
+```ps1
+    python src/gpc.py -i <input_file> -o <output_file> -v
+```
+
+Met de volgende parameters:
+
+* -i, --input: de broncode die gecompileerd moet worden
+* -o, --output: het .bin bestand dat gemaakt wordt
+* -v, --verbose: Volg de uitput
+
+### Voorbeeld
+
+```ps1
+    python src/gpc.py -i .\examples\simpel_programma_2.gpc -o .\binary_file.bin -v
+```
+
+## Python starten
 
 Voor de compiler gebruiken we een virtuele python omgeving.
 
