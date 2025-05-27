@@ -91,26 +91,20 @@ class InstructionTransformer(Transformer):
                 params = args[1]
             return 2 << 12 | (params.get("DELAY") & 0xFFF)
 
-        elif "ZET_PORT_AAN" in name:
+        elif "ZET_POORT_AAN" in name:
             if len(args) > 1:
                 params = args[1]
 
             return (
-                (3 << 12)
-                | 0x0100
-                | (params.get("HSIO") << 9)
-                | (params.get("PORTNR") & 0x001F)
+                (3 << 12) | (params.get("HSIO") << 9) | (params.get("POORT") & 0x001F)
             )
 
-        elif "ZET_PORT_UIT" in name:
+        elif "ZET_POORT_UIT" in name:
             if len(args) > 1:
                 params = args[1]
 
             return (
-                (4 << 12)
-                | 0x0100
-                | (params.get("HSIO") << 9)
-                | (params.get("PORTNR") & 0x001F)
+                (4 << 12) | (params.get("HSIO") << 9) | (params.get("POORT") & 0x001F)
             )
 
         elif "FLIP_POORT" in name:
@@ -118,7 +112,7 @@ class InstructionTransformer(Transformer):
                 params = args[1]
 
             return (
-                (5 << 12) | (params.get("HSIO") << 9) | (params.get("PORTNR") & 0x001F)
+                (5 << 12) | (params.get("HSIO") << 9) | (params.get("POORT") & 0x001F)
             )
 
         elif "BEWAAR_STATUS" in name:
@@ -184,15 +178,15 @@ if __name__ == "__main__":
         logging.error("Error: Input file is required")
         sys.exit(1)
 
-    # If output is not specified, set it to the input file name with .bin extension
-    if args.output == None:
-        args.output = os.path.splitext(args.input)[0] + ".bin"
-        logging.debug("Output file not specified, using default '{args.output}'")
-
     # Check if the input file exists
     if not os.path.exists(args.input):
         logging.error(f"Error: Input file {args.input} does not exist")
         sys.exit(1)
+
+    # If output is not specified, set it to the input file name with .bin extension
+    if args.output == None:
+        args.output = os.path.splitext(args.input)[0] + ".bin"
+        logging.debug("Output file not specified, using default '{args.output}'")
 
     # Check if the output file exists
     if os.path.exists(args.output):
