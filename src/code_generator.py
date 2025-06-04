@@ -115,7 +115,7 @@ def encode_opcode(code, params):
 			# | INDEX   | 0b0000 0001 1111 1111 1111 1111 | 0x01FFFF | INDEX             |
 
 			result.append(0x60 | (params[0][1] & 0x010000))
-			result.append(params[0][1] & 0x00FFFF)
+			result.append(params[0][1] & 0x01FFFF)
 
 		case _:
 			logging.debug(f"{code} is een onbekende instructie")
