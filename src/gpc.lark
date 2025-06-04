@@ -1,11 +1,19 @@
-    start: instruction+
-    instruction: IDENT "(" param_list ")" ";" | IDENT ";"
-    param_list: param ("," param)*
-    param: IDENT "=" HEX | IDENT "=" NUMBER
+start: statement+
 
-    IDENT: /[A-Za-z_]+/
-    HEX: /0x[0-9A-Fa-f]+/
-    NUMBER: /[0-9]+/
+statement: function_call ";" | label  ":"
 
-    %import common.WS
-    %ignore WS
+function_call: NAME "(" [param_list] ")" |  NAME 
+
+param_list: param ("," param)*
+param: NAME "=" value
+
+label: NAME
+
+value: HEX_NUMBER | DEC_NUMBER
+
+NAME: /[A-Za-z_]+/
+HEX_NUMBER: "0x" /[0-9A-Fa-f]+/
+DEC_NUMBER: /\d+/
+
+%import common.WS
+%ignore WS

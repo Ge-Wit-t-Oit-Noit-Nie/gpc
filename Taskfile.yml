@@ -1,0 +1,37 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  COMPILER_OPTIONS: " -v" 
+
+tasks:
+  example:
+    cmds:
+      - python src/gpc.py -i examples/new_program.gpc -o build/output.bin {{.COMPILER_OPTIONS}}
+    silent: true
+
+  build: &build
+    cmds: 
+    - |
+        bash -c '
+        source .venv/bin/activate
+        python src/gpc.py -i {{.INPUT}} -o {{.OUTPUT}} {{.COMPILER_OPTIONS}}
+        '
+    silent: true
+    internal: true
+
+  all:
+    deps: [board_01, board_02]
+    cmds:
+      - echo "Done building the applications"
+
+  board_01:
+    <<: *build
+    vars: { INPUT: programma/board_01.gpc, OUTPUT: build/board_01.bin }
+    internal: false
+
+  board_02:
+    <<: *build
+    vars: { INPUT: programma/board_02.gpc, OUTPUT: build/board_02.bin }
+    internal: false

@@ -69,3 +69,27 @@ Dit kan gedaan worden met de volgende commande:
 ```ps1
 python -m venv .venv
 ```
+
+## Taskfile
+
+Voor het eenvoudig testen en compileren, is er een Taskfile gemaakt.
+
+### Taskfile starten
+
+om een compilatie te staten voor **piggybag 01**, voer het volgende commando uit:
+
+```ps1
+task build_01
+```
+
+### Build all
+
+om een compilatie te staten voor **alle** piggybags, voer het volgende commando uit:
+
+```ps1
+task all
+```
+
+### Taskfile installeren
+
+Volg de instructies op de website: [taskfile.dev](https://taskfile.dev/installation/)
