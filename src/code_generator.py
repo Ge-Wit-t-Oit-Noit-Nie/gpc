@@ -53,13 +53,14 @@ def encode_opcode(code, params):
 			# | Element | Bitmask               | Hex    | Parameter         |
 			# | ------- | --------------------- | ------ | ----------------- |
 			# | OPCODE  | 0b0011 0000 0000 0000 | 0x3000 |                   |
+			# | STATUS  | 0b0000 0001 0000 0000 | 0x0100 |                   |
 			# | HSIO    | 0b0000 0001 0000 0000 | 0x0200 | HSIO (0x0 / 0x01) |
 			# | POORT   | 0b0000 0000 0001 1111 | 0x001F | POORT             |
 			for param in params:
 				if "POORT" == param[0].upper():
 					poort = (param[1] & 0x001F)
 				elif "HSIO" == param[0].upper():
-					hsio = (param[1] & 0x01) << 1
+					hsio = ((param[1] & 0x01) << 1) | 0x01
 				else:
 					logging.debug(f"{code} heeft een onbekende parameter {param[0]}")
 
@@ -67,6 +68,24 @@ def encode_opcode(code, params):
 			result.append(poort)
 
 		case "ZET_POORT_UIT":
+			# | Element | Bitmask               | Hex    | Parameter         |
+			# | ------- | --------------------- | ------ | ----------------- |
+			# | OPCODE  | 0b0100 0000 0000 0000 | 0x3000 |                   |
+			# | STATUS  | 0b0000 0000 0000 0000 | 0x0000 |                   |
+			# | HSIO    | 0b0000 0010 0000 0000 | 0x0200 | HSIO (0x0 / 0x01) |
+			# | POORT   | 0b0000 0000 0001 1111 | 0x001F | POORT             |
+			for param in params:
+				if "POORT" == param[0].upper():
+					poort = (param[1] & 0x001F)
+				elif "HSIO" == param[0].upper():
+					hsio = ((param[1] & 0x01) << 1) 
+				else:
+					logging.debug(f"{code} heeft een onbekende parameter {param[0]}")
+
+			result.append(0x30 | hsio)
+			result.append(poort)
+			
+		case "FLIP_POORT":
 			# | Element | Bitmask               | Hex    | Parameter         |
 			# | ------- | --------------------- | ------ | ----------------- |
 			# | OPCODE  | 0b0100 0000 0000 0000 | 0x4000 |                   |
@@ -82,37 +101,20 @@ def encode_opcode(code, params):
 
 			result.append(0x40 | hsio)
 			result.append(poort)
-			
-		case "FLIP_POORT":
-			# | Element | Bitmask               | Hex    | Parameter         |
-			# | ------- | --------------------- | ------ | ----------------- |
-			# | OPCODE  | 0b0100 0000 0000 0000 | 0x5000 |                   |
-			# | HSIO    | 0b0000 0010 0000 0000 | 0x0200 | HSIO (0x0 / 0x01) |
-			# | POORT   | 0b0000 0000 0001 1111 | 0x001F | POORT             |
-			for param in params:
-				if "POORT" == param[0].upper():
-					poort = (param[1] & 0x001F)
-				elif "HSIO" == param[0].upper():
-					hsio = (param[1] & 0x01) << 1
-				else:
-					logging.debug(f"{code} heeft een onbekende parameter {param[0]}")
-
-			result.append(0x50 | hsio)
-			result.append(poort)
 
 		case "BEWAAR_STATUS":
 			# | Element | Bitmask               | Hex    | Parameter |
 			# | ------- | --------------------- | ------ | --------- |
-			# | OPCODE  | 0b0110 0000           | 0x60   |           |
-			result.append(0x60)
+			# | OPCODE  | 0b0110 0000           | 0x50   |           |
+			result.append(0x50)
 			
 		case "SPRING":
 			# | Element | Bitmask                         | Hex      | Parameter         |
 			# | ------- | ------------------------------- | ------   | ----------------- |
-			# | OPCODE  | 0b0111 0000 0000 0000 0000 0000 | 0x700000 |                   |
+			# | OPCODE  | 0b0111 0000 0000 0000 0000 0000 | 0x600000 |                   |
 			# | INDEX   | 0b0000 0001 1111 1111 1111 1111 | 0x01FFFF | INDEX             |
 
-			result.append(0x70 | (params[0][1] & 0x010000))
+			result.append(0x60 | (params[0][1] & 0x010000))
 			result.append(params[0][1] & 0x00FFFF)
 
 		case _:
