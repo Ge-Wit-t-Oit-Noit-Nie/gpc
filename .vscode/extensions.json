@@ -1,5 +1,6 @@
 {
     "recommendations": [
-        "dirk-thomas.vscode-lark"
+        "dirk-thomas.vscode-lark",
+        "iulian-radu-at.taskfile-launcher"
     ]
 }
