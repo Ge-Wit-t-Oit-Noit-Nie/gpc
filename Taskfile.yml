@@ -12,12 +12,21 @@ tasks:
     silent: true
 
   build: &build
+    os: darwin
     cmds: 
     - |
         bash -c '
+        mkdir -p build
         source .venv/bin/activate
         python src/gpc.py -i {{.INPUT}} -o {{.OUTPUT}} {{.COMPILER_OPTIONS}}
         '
+    silent: true
+    internal: true
+
+  build: &build
+    os: windows
+    cmds: 
+      - New-Item -Path . -Name "build" -ItemType Directory 
     silent: true
     internal: true
 
@@ -29,6 +38,8 @@ tasks:
   board_01:
     <<: *build
     vars: { INPUT: programma/board_01.gpc, OUTPUT: build/board_01.bin }
+    cmds:
+      - python src/gpc.py -i {{.INPUT}} -o {{.OUTPUT}} {{.COMPILER_OPTIONS}}
     internal: false
 
   board_02:
