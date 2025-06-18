@@ -50,7 +50,7 @@ De functie ZET_POORT_AAN wordt als volgt gecodeerd:
 | ------- | --------------------- | ------ | ----------------- |
 | OPCODE  | 0b0011 0000 0000 0000 | 0x3000 |                   |
 | STATUS  | 0b0000 0001 0000 0000 | 0x0100 |                   |
-| HSIO    | 0b0000 0001 0000 0000 | 0x0200 | HSIO (0x0 / 0x01) |
+| HSIO    | 0b0000 0010 0000 0000 | 0x0200 | HSIO (0x0 / 0x01) |
 | POORT   | 0b0000 0000 0001 1111 | 0x001F | POORT             |
 
 De POORT is een van de 13 (0-12) gewone IO Poorten of 0-8 HSIO poorten.
@@ -94,7 +94,7 @@ De functie BEWAAR_STATUS wordt als volgt gecodeerd:
 
 De functie SPRING wordt als volgt gecodeerd:
 
-| Element | Bitmask                         | Hex      | Parameter         |
-| ------- | ------------------------------- | ------   | ----------------- |
-| OPCODE  | 0b0111 0000 0000 0000 0000 0000 | 0x600000 |                   |
-| INDEX   | 0b0000 0001 1111 1111 1111 1111 | 0x01FFFF | INDEX             |
+| Element | Bitmask     | Hex   | Parameter |
+| ------- | ----------- | ----- | --------- |
+| OPCODE  | 0b0110 0000 | 0x60  |           |
+| LABEL   | 0b0000 0011 | 0x03  | LABEL     |
