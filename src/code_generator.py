@@ -5,6 +5,7 @@ import logging
 # Define file_header structure to be used in the generation
 file_header = {
     "BEGIN_PROGRAMMA": 0x00000000,
+    "LOOP_PROGRAMMA": 0x00000000,
     "PAUZE_PROGRAMMA": 0x00000000,
     "EINDE_PROGRAMMA": 0x00000000,
 }
@@ -32,7 +33,7 @@ def encode_opcode(code, params):
         case "STOPPEN":
             # | Element | Bitmask               | Hex    | Parameter |
             # | ------- | --------------------- | ------ | --------- |
-            # | OPCODE  | 0b0000 0000		    | 0x00   |           |
+            # | OPCODE  | 0b0000 0000            | 0x00   |           |
             result.append(0x00)
 
         case "PAUZE":
@@ -109,16 +110,24 @@ def encode_opcode(code, params):
             result.append(0x50)
 
         case "SPRING":
-            # | Element | Bitmask                         | Hex      | Parameter         |
-            # | ------- | ------------------------------- | ------   | ----------------- |
-            # | OPCODE  | 0b0111 0000 0000 0000 0000 0000 | 0x600000 |                   |
-            # | INDEX   | 0b0000 0001 1111 1111 1111 1111 | 0x01FFFF | INDEX             |
+            # | Element | Bitmask      	| Hex     | Parameter	|
+            # | ------- | -------------	| -----   | ---------	|
+            # | OPCODE  | 0b0110 0000   | 0x60    |            	|
+            # | LABEL   | 0b0000 0011   | 0x03    | LABEL     	|
+            match params[0][1].upper():
+                case "BEGIN_PROGRAMMA":
+                    label = 0x00
+                case "LOOP_PROGRAMMA":
+                    label = 0x01
+                case "PAUZE_PROGRAMMA":
+                    label = 0x02
+                case "EINDE_PROGRAMMA":
+                    label = 0x03
+                case _:
+                    logging.debug(f"{code} heeft een onbekende label {params[0][1]}")
 
-            result.append(0x60 | (params[0][1] & 0x010000))
-            result.append(params[0][1] & 0x01FFFF)
-
-        case _:
-            logging.debug(f"{code} is een onbekende instructie")
+                    
+            result.append(0x60 | (label & 0x03))
 
     return result
 
@@ -144,7 +153,7 @@ def generate_binary(tokens, output_filename):
 
     # Initialize binary data with header for labels
     # Each fixed label can potentially cover the entire memory scope: 128k.
-    # in HEX 0x00020000	= 4 bytes
+    # in HEX 0x00020000    = 4 bytes
     binary_data = bytearray()
     for label in file_header:
         binary_data.extend(struct.pack("<I", file_header[label]))
@@ -159,13 +168,15 @@ def generate_binary(tokens, output_filename):
 
     # Update label addresses in the header
     for label in file_header:
-        address = file_header[label]
+        address = file_header[label] + 2
         if "BEGIN_PROGRAMMA" == label:
             binary_data[0:4] = struct.pack("<I", address)
-        elif "PAUZE_PROGRAMMA" == label:
+        elif "LOOP_PROGRAMMA" == label:
             binary_data[4:8] = struct.pack("<I", address)
-        elif "EINDE_PROGRAMMA" == label:
+        elif "PAUZE_PROGRAMMA" == label:
             binary_data[8:12] = struct.pack("<I", address)
+        elif "EINDE_PROGRAMMA" == label:
+            binary_data[12:16] = struct.pack("<I", address)
 
     # Write binary data to file
     with open(output_filename, "wb") as f:

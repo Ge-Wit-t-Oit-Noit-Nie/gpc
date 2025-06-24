@@ -32,8 +32,11 @@ class Tokenizer(Transformer):
         val = items[0]
         if isinstance(val, str) and val.startswith("0x"):
             return int(val, 16)
-        return int(val)
-
+        try:
+            return int(val, 16)
+        except:
+            return str(val)
+        
     # Converts a HEX_NUMBER token into a string
     def HEX_NUMBER(self, token):
         return str(token)
