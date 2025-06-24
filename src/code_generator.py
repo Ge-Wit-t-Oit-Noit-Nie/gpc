@@ -5,10 +5,10 @@ import logging
 
 # Define file_header structure to be used in the generation
 file_header = {
-	"BEGIN_PROGRAMMA": 0x00000000,
-	"LOOP_PROGRAMMA": 0x00000000,
-	"PAUZE_PROGRAMMA": 0x00000000,
-	"EINDE_PROGRAMMA": 0x00000000
+    "BEGIN_PROGRAMMA": 0x00000000,
+    "LOOP_PROGRAMMA": 0x00000000,
+    "PAUZE_PROGRAMMA": 0x00000000,
+    "EINDE_PROGRAMMA": 0x00000000,
 }
 
 def encode_opcode(code, params):
@@ -171,14 +171,14 @@ def generate_binary(tokens, output_filename):
 	# Update label addresses in the header
 	for label in file_header:
 		address = file_header[label] + 2
-		if "BEGIN_PROGRAMMA"==label:
+		if "BEGIN_PROGRAMMA" == label:
 			binary_data[0:4] = struct.pack("<I", address)
-		elif "LOOP_PROGRAMMA"==label:
-			binary_data[5:8] = struct.pack("<I", address)
-		elif "PAUZE_PROGRAMMA"==label:
-			binary_data[9:12] = struct.pack("<I", address)
-		elif "EINDE_PROGRAMMA"==label:
-			binary_data[13:16] = struct.pack("<I", address)
+		elif "LOOP_PROGRAMMA" == label:
+			binary_data[4:8] = struct.pack("<I", address)
+		elif "PAUZE_PROGRAMMA" == label:
+			binary_data[8:12] = struct.pack("<I", address)
+		elif "EINDE_PROGRAMMA" == label:
+			binary_data[12:16] = struct.pack("<I", address)
 		
 	# Write binary data to file
 	with open(output_filename, "wb") as f:
