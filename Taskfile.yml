@@ -21,6 +21,14 @@ tasks:
     silent: true
     internal: true
 
+  build_old: &build_old
+    cmds: 
+    - |
+        bash -c 'python src/gpc.py -i {{.INPUT}} -o {{.OUTPUT}} {{.COMPILER_OPTIONS}}
+        '
+    silent: true
+    internal: true
+
   all:
     deps: [board_01, board_02]
     cmds:
@@ -32,6 +40,6 @@ tasks:
     internal: false
 
   board_02:
-    <<: *build
+    <<: *build_old
     vars: { INPUT: programma/board_02.gpc, OUTPUT: build/board_02.bin }
     internal: false
